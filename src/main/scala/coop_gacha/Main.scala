@@ -51,11 +51,7 @@ def entry(): Unit = {
             })
             .filter(_ != null)
             .toArray
-          if (menus.nonEmpty) {
-            solvedKondate.set(Some(menus))
-          } else {
-            dom.window.alert("指定された献立が見つかりませんでした。")
-          }
+          solvedKondate.set(Some(menus))
         case _ => {}
       }
     }
@@ -245,7 +241,7 @@ def entry(): Unit = {
             div(
               hr(),
               h2(s"今日の献立 (計${menus.map(_.price).sum}円)"),
-              div(
+              if (menus.nonEmpty) div(
                 idAttr := "kondate_list",
                 menus.map { menu =>
                   a(
@@ -262,6 +258,8 @@ def entry(): Unit = {
                     )
                   )
                 }
+              ) else div(
+                p("(トレイに何も載せずにレジに向かってください)")
               ),
               div(
                 h2("栄養バランス"),

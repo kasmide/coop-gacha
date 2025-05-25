@@ -35,9 +35,9 @@ def entry(): Unit = {
     .map { json =>
       val retrievedMenus = json.asInstanceOf[js.Array[Menu]].toArray
       availableMenus.set(Some(retrievedMenus))
-      dom.window.location.href match {
-        case url if url.contains("#") =>
-          val menuIDs = url.split("#").last.split(",")
+      dom.window.location.hash match {
+        case url if url != "" =>
+          val menuIDs = url.drop(1).split(",")
           val menus = menuIDs
             .map(menu => {
               val parts = menu.split(":")
@@ -63,8 +63,7 @@ def entry(): Unit = {
       case Some(menus) =>
         val menusString =
           menus.map(menu => s"${menu.houseId}:${menu.menuId}").mkString(",")
-        dom.window.location.href =
-          dom.window.location.href.split("#").head + "#" + menusString
+        dom.window.location.hash = "#" + menusString
       case None => ()
     }
   )(using unsafeWindowOwner)
@@ -251,7 +250,7 @@ def entry(): Unit = {
                   ),
                   onClick --> { _ =>
                     val text =
-                      s"今日の献立: ${menus.map(menu => s"${menu.name} (${menu.price}円)").mkString("\n")}"
+                      s"今日の献立:\n${menus.reverse.map(menu => s"${menu.name} (${menu.price}円)").mkString("\n")}"
                     js.Dynamic.global.window.navigator.share(
                       js.Dynamic.literal(
                         "text" -> text,

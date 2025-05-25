@@ -1,7 +1,7 @@
 {
   description = "build env";
 
-  inputs = { nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable"; sbt.url = "github:zaninime/sbt-derivation"; };
+  inputs = { nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable"; };
 
   outputs = { self, nixpkgs }:
     let

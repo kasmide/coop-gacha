@@ -6,23 +6,28 @@ build:
   stage: build
   image: nixos/nix
   script:
-    - nix develop --command bash -c "npm i && npm run build" # TODO: nix build を使えるようにする
+    - nix --extra-experimental-features nix-command --extra-experimental-features flakes develop --command bash -c "npm i && npm run build" # TODO: nix build を使えるようにする
   artifacts:
     paths:
       - dist/
 
 obtain-menu:
   stage: build
-  image: ghcr.io/nushell/nushell:nightly
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl nushell
   script:
     - nu tools/retrieve_menu.nu
   artifacts:
     paths:
       - menu.json
+  variables:
+    CI_DEBUG_TRACE: "true"
 
 pages:
   stage: deploy
   script:
+    - true `mv public public~`
     - mv dist public
     - mv menu.json public/menu.json
   artifacts:

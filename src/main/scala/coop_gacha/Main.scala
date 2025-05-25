@@ -24,7 +24,8 @@ def entry(): Unit = {
       price = 650,
       requireMainDish = true,
       allowDuplicateEntries = false,
-      sortMetric = KondateSolver.NutritionBalance
+      sortMetric = KondateSolver.NutritionBalance,
+      priceRange = 20
     )
   )
   dom
@@ -41,9 +42,9 @@ def entry(): Unit = {
             .map(menu => {
               val parts = menu.split(":")
               if (parts.length == 2) {
-                retrievedMenus.find(m =>
-                  m.houseId == parts(0) && m.menuId == parts(1)
-                ).orNull
+                retrievedMenus
+                  .find(m => m.houseId == parts(0) && m.menuId == parts(1))
+                  .orNull
               } else {
                 null
               }
@@ -64,8 +65,10 @@ def entry(): Unit = {
   solvedKondate.signal.foreach(el =>
     el match {
       case Some(menus) =>
-        val menusString = menus.map(menu => s"${menu.houseId}:${menu.menuId}").mkString(",")
-        dom.window.location.href = dom.window.location.href.split("#").head + "#" + menusString
+        val menusString =
+          menus.map(menu => s"${menu.houseId}:${menu.menuId}").mkString(",")
+        dom.window.location.href =
+          dom.window.location.href.split("#").head + "#" + menusString
       case None => ()
     }
   )(using unsafeWindowOwner)
@@ -77,11 +80,37 @@ def entry(): Unit = {
     div(
       h1(
         span("生協食堂"),
-        span(input(
+        span(
+          input(
+            idAttr := "kondate_price",
+            typ := "text",
+            inputMode := "numeric",
+            pattern := "\\d*",
+            value <-- kondateConfig.signal.map(_.price.toString),
+            onInput.mapToValue
+              .map(value =>
+                value.toIntOption match {
+                  case Some(price) =>
+                    if (price >= 0 && price <= 1500) Some(price) else None
+                  case None => if (value.isEmpty) Some(0) else None
+                }
+              )
+              .map(_.getOrElse(kondateConfig.now().price).toString())
+              .setAsValue --> { value =>
+              kondateConfig.update(conf => conf.copy(price = value.toInt))
+            }
+          ),
+          "円"
+        ),
+        span("ガチャ")
+      ),
+      p(
+        input(
           idAttr := "kondate_price",
           typ := "text",
           inputMode := "numeric",
           pattern := "\\d*",
+          width := "33px",
           value <-- kondateConfig.signal.map(_.price.toString),
           onInput.mapToValue
             .map(value =>
@@ -96,11 +125,30 @@ def entry(): Unit = {
             kondateConfig.update(conf => conf.copy(price = value.toInt))
           }
         ),
-        "円"),span("ガチャ")
-      ),
-      p(
-        child <-- kondateConfig.signal.map(_.price.toString),
-        "円程度で、かつ栄養バランスの良い食事の組み合わせをランダムに生成します"
+        "±",
+        input(
+          typ := "text",
+          inputMode := "numeric",
+          pattern := "\\d*",
+          fontSize := "inherit",
+          width := "22px",
+          textAlign.center,
+          value <-- kondateConfig.signal.map(_.priceRange.toString),
+          onInput.mapToValue
+            .map(value =>
+              value.toIntOption match {
+                case Some(priceRange) =>
+                  if (priceRange >= 0 && priceRange <= 100) Some(priceRange)
+                  else None
+                case None => if (value.isEmpty) Some(0) else None
+              }
+            )
+            .map(_.getOrElse(kondateConfig.now().priceRange).toString())
+            .setAsValue --> { value =>
+            kondateConfig.update(conf => conf.copy(priceRange = value.toInt))
+          }
+        ),
+        "円で、かつ栄養バランスの良い食事の組み合わせをランダムに生成します"
       ),
       div(
         idAttr := "control_panel",
@@ -113,12 +161,30 @@ def entry(): Unit = {
         select(
           onChange.mapToValue --> { selected =>
             selected match {
-              case "nutrition" => kondateConfig.update(conf => conf.copy(sortMetric = KondateSolver.NutritionBalance))
-              case "energy" => kondateConfig.update(conf => conf.copy(sortMetric = KondateSolver.Enery))
+              case "nutrition" =>
+                kondateConfig.update(conf =>
+                  conf.copy(sortMetric = KondateSolver.NutritionBalance)
+                )
+              case "energy" =>
+                kondateConfig.update(conf =>
+                  conf.copy(sortMetric = KondateSolver.Enery)
+                )
             }
           },
-          option("栄養バランスを重視", value := "nutrition", selected <-- kondateConfig.signal.map(_.sortMetric == KondateSolver.NutritionBalance)),
-          option("カロリーを重視", value := "energy", selected <-- kondateConfig.signal.map(_.sortMetric == KondateSolver.Enery))
+          option(
+            "栄養バランスを重視",
+            value := "nutrition",
+            selected <-- kondateConfig.signal.map(
+              _.sortMetric == KondateSolver.NutritionBalance
+            )
+          ),
+          option(
+            "カロリーを重視",
+            value := "energy",
+            selected <-- kondateConfig.signal.map(
+              _.sortMetric == KondateSolver.Enery
+            )
+          )
         ),
         label(
           input(
@@ -141,7 +207,7 @@ def entry(): Unit = {
             }
           ),
           "料理の重複を許可する(動作が重くなります)"
-        ),
+        )
       ),
       child <-- availableMenus.signal.map {
         case Some(menus) =>
@@ -188,11 +254,11 @@ def entry(): Unit = {
                     rel := "noopener noreferrer",
                     img(
                       src := s"https://west2-univ.jp/menu_img/png_sp/${menu.menuId}.png",
-                      alt := s"${menu.name}の画像",
+                      alt := s"${menu.name}の画像"
                     ),
                     span(
                       span(menu.name),
-                      span(s"${menu.price}"),
+                      span(s"${menu.price}")
                     )
                   )
                 }

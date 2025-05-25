@@ -48,7 +48,8 @@ object KondateSolver {
       val price: Int,
       val requireMainDish: Boolean,
       val allowDuplicateEntries: Boolean,
-      val sortMetric: SortMetric
+      val sortMetric: SortMetric,
+      val priceRange: Int
   )
 
   // Copilot 万歳
@@ -127,7 +128,7 @@ class KondateSolver(menus: Array[Menu], config: KondateSolver.KondateConfig) {
   )
   lazy val decentResult: Array[Array[Menu]] = {
     var dp: Array[Array[Array[Menu]]] =
-      Array.fill(config.price + 50)(Array.empty[Array[Menu]])
+      Array.fill(config.price + config.priceRange + 1)(Array.empty[Array[Menu]])
     for (menu <- menus) {
       var next_dp = if (config.allowDuplicateEntries) { dp }
       else { dp.clone() }
@@ -161,7 +162,7 @@ class KondateSolver(menus: Array[Menu], config: KondateSolver.KondateConfig) {
       }
       dp = next_dp
     }
-    val result = dp.slice(config.price - 30, config.price + 30).flatten
+    val result = dp.slice(config.price - config.priceRange, config.price + config.priceRange + 1).flatten
     if (config.requireMainDish) {
       result.filter(_.exists(_.price > 200)) // 小鉢以外のおかずを含むように
     } else {

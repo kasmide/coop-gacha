@@ -37,7 +37,7 @@ def entry(): Unit = {
       availableMenus.set(Some(retrievedMenus))
       dom.window.location.hash match {
         case url if url != "" =>
-          val menuIDs = url.drop(1).split(",")
+          val menuIDs = js.URIUtils.decodeURIComponent(url.drop(1)).split(",")
           val menus = menuIDs
             .map(menu => {
               val parts = menu.split(":")

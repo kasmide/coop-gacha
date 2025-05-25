@@ -1,0 +1,156 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: #333;
+  background-color: #f2efe1;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-height: 100svh;
+}
+
+h1 {
+  font-size: 2.2em;
+  & > span {
+    display: inline-block;
+  }
+}
+
+h2 {
+  margin: 1.6em 0 .8em 0;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+
+button {
+  border-radius: 4px;
+  border: 2px solid #333;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #0000;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  background-color: #48453a;
+  color: #fff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+table {
+  border-radius: 4px;
+  border-collapse: separate;
+  width: 100%;
+  & th {
+    text-align: center;
+    padding: 0.5em 1em;
+    font-weight: 500;
+    border-bottom: 2px solid #0006;
+  }
+  & td {
+    padding: 0.5em 1em;
+    border-bottom: 1px solid #0003;
+  }
+}
+input, select {
+  background-color: transparent;
+  border: unset;
+  border-bottom: 2px solid #0003;
+  margin: 0 0.2em;
+  &:focus {
+    outline: none;
+  }
+
+}
+input#kondate_price {
+  width: 100px;
+  font-size: inherit;
+  font-weight: inherit;
+  text-align: center;
+}
+
+div#kondate_list {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  flex-direction: row-reverse;
+  justify-content: center;
+  gap: 10px;
+  & > a {
+    background-color: rgba(230, 218, 195, 0.533);
+    border-radius: 8px;
+    padding: 10px;
+    flex: 1;
+    min-width: 180px;
+    max-height: 300px;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    justify-content: center;
+    align-items: center;
+    color: inherit;
+    & > img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    & > span > span {
+      display: inline-block;
+      &:last-child {
+        color: #543d2c;
+        margin-left: 4px;
+        &::after {
+          content: "円";
+          font-size: 0.7em;
+        }
+      }
+    }
+  }
+}
+
+hr {
+  border: none;
+  border-bottom: solid 2px #0002;
+}
+
+@media screen and (max-width: 670px) {
+  div#kondate_list {
+    display: flex;
+    flex-wrap: wrap-reverse;
+    & > a {
+      max-width: unset;
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      align-items: center;
+    }
+  }
+}

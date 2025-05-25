@@ -5,6 +5,7 @@ import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.codecs.*
 import scalajs.js
 import scala.concurrent.Future
+import scala.scalajs.js.annotation.JSName
 implicit val ec: scala.concurrent.ExecutionContext =
   scala.concurrent.ExecutionContext.global
 
@@ -32,9 +33,43 @@ def entry(): Unit = {
     .fetch("./menu.json")
     .toFuture
     .flatMap(_.json().toFuture)
-    .map { json =>
-      val retrievedMenus = json.asInstanceOf[js.Array[Menu]].toArray
-      availableMenus.set(Some(retrievedMenus))
+    .map { menusInfo =>
+      class MenuID(
+          @JSName("house")
+          val houseId: String,
+          @JSName("menu")
+          val menuId: String
+      ) extends js.Object
+      class MenusPerWeek(
+          val date: String,
+          val menus: js.Array[MenuID]
+      ) extends js.Object
+      class MenusInfo(
+          val menus_per_date: js.Array[MenusPerWeek],
+          val menu_details: js.Array[Menu]
+      ) extends js.Object
+
+      val menuDetails = menusInfo.asInstanceOf[MenusInfo].menu_details.toArray
+      val menusOfWeek = menusInfo
+        .asInstanceOf[MenusInfo]
+        .menus_per_date
+        .sortBy(week => js.Date.parse(week.date))
+        .reduceLeft((acc, week) => {
+          if (js.Date.parse(week.date) > js.Date.now()) {
+            acc // 現在より新しい週は無視; 現在より新しい週しかない場合は一番古い週が選択される
+          } else {
+            week
+          }
+        })
+        .menus
+        .toArray
+        .map(menu =>
+          menuDetails
+            .find(m => m.houseId == menu.houseId && m.menuId == menu.menuId)
+            .orNull
+        )
+        .filter(_ != null)
+      availableMenus.set(Some(menusOfWeek))
       dom.window.location.hash match {
         case url if url != "" =>
           val menuIDs = js.URIUtils.decodeURIComponent(url.drop(1)).split(",")
@@ -42,7 +77,7 @@ def entry(): Unit = {
             .map(menu => {
               val parts = menu.split(":")
               if (parts.length == 2) {
-                retrievedMenus
+                menuDetails
                   .find(m => m.houseId == parts(0) && m.menuId == parts(1))
                   .orNull
               } else {
@@ -261,25 +296,25 @@ def entry(): Unit = {
                 )
               ),
               if (menus.nonEmpty) div(
-                idAttr := "kondate_list",
-                menus.map { menu =>
-                  a(
-                    href := s"https://west2-univ.jp/sp/detail.php?t=${menu.houseId}&c=${menu.menuId}",
-                    target := "_blank",
-                    rel := "noopener noreferrer",
-                    img(
-                      src := s"https://west2-univ.jp/menu_img/png_sp/${menu.menuId}.png",
-                      alt := s"${menu.name}の画像"
-                    ),
-                    span(
-                      span(menu.name),
-                      span(s"${menu.price}")
+                  idAttr := "kondate_list",
+                  menus.map { menu =>
+                    a(
+                      href := s"https://west2-univ.jp/sp/detail.php?t=${menu.houseId}&c=${menu.menuId}",
+                      target := "_blank",
+                      rel := "noopener noreferrer",
+                      img(
+                        src := s"https://west2-univ.jp/menu_img/png_sp/${menu.menuId}.png",
+                        alt := s"${menu.name}の画像"
+                      ),
+                      span(
+                        span(menu.name),
+                        span(s"${menu.price}")
+                      )
                     )
-                  )
-                }
-              ) else div(
-                p("(トレイに何も載せずにレジに向かってください)")
-              ),
+                  }
+                ) else div(
+                  p("(トレイに何も載せずにレジに向かってください)")
+                ),
               div(
                 h2("栄養バランス"),
                 span(

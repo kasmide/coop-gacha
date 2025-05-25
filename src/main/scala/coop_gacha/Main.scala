@@ -144,16 +144,7 @@ def entry(): Unit = {
             kondateConfig.update(conf => conf.copy(priceRange = value.toInt))
           }
         ),
-        "円で、かつ栄養バランスの良い食事の組み合わせをランダムに生成します"
-      ),
-      div(
-        idAttr := "control_panel",
-        display.flex,
-        flexWrap.wrap,
-        alignItems.center,
-        justifyContent.center,
-        margin := "10px",
-        gap := "10px",
+        "円で、かつ",
         select(
           onChange.mapToValue --> { selected =>
             selected match {
@@ -168,20 +159,30 @@ def entry(): Unit = {
             }
           },
           option(
-            "栄養バランスを重視",
+            "栄養バランスを重視した",
             value := "nutrition",
             selected <-- kondateConfig.signal.map(
               _.sortMetric == KondateSolver.NutritionBalance
             )
           ),
           option(
-            "カロリーを重視",
+            "カロリーを重視した",
             value := "energy",
             selected <-- kondateConfig.signal.map(
               _.sortMetric == KondateSolver.Enery
             )
           )
         ),
+        "食事の組み合わせをランダムに生成します"
+      ),
+      div(
+        idAttr := "control_panel",
+        display.flex,
+        flexWrap.wrap,
+        alignItems.center,
+        justifyContent.center,
+        margin := "10px",
+        gap := "10px",
         label(
           input(
             typ := "checkbox",
@@ -240,7 +241,26 @@ def entry(): Unit = {
           case Some(menus) =>
             div(
               hr(),
-              h2(s"今日の献立 (計${menus.map(_.price).sum}円)"),
+              h2(
+                idAttr := "kondate_heading",
+                s"今日の献立 (計${menus.map(_.price).sum}円)",
+                button(
+                  idAttr := "share",
+                  i(
+                    className := "ri-share-fill"
+                  ),
+                  onClick --> { _ =>
+                    val text =
+                      s"今日の献立: ${menus.map(menu => s"${menu.name} (${menu.price}円)").mkString("\n")}"
+                    js.Dynamic.global.window.navigator.share(
+                      js.Dynamic.literal(
+                        "text" -> text,
+                        "url" -> dom.window.location.href
+                      )
+                    )
+                  }
+                )
+              ),
               if (menus.nonEmpty) div(
                 idAttr := "kondate_list",
                 menus.map { menu =>

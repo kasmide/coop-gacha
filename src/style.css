@@ -38,6 +38,16 @@ h1 {
 
 h2 {
   margin: 1.6em 0 .8em 0;
+  &#kondate_heading {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    & > #share {
+      border: none;
+      padding: 4px 8px;
+      display: flex;
+    }    
+  }
 }
 
 #app {

@@ -1,0 +1,30 @@
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  image: nixos/nix
+  script:
+    - nix develop --command bash -c "npm i && npm run build" # TODO: nix build を使えるようにする
+  artifacts:
+    paths:
+      - dist/
+
+obtain-menu:
+  stage: build
+  image: ghcr.io/nushell/nushell:nightly
+  script:
+    - nu tools/retrieve_menu.nu
+  artifacts:
+    paths:
+      - menu.json
+
+pages:
+  stage: deploy
+  script:
+    - mv dist public
+    - mv menu.json public/menu.json
+  artifacts:
+    paths:
+      - public

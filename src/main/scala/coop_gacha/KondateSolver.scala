@@ -42,7 +42,7 @@ object GoodNutrition {
 object KondateSolver {
   trait SortMetric
   case object NutritionBalance extends SortMetric
-  case object Enery extends SortMetric
+  case object Energy extends SortMetric
 
   case class KondateConfig(
       val price: Int,
@@ -143,15 +143,13 @@ class KondateSolver(menus: Array[Menu], config: KondateSolver.KondateConfig) {
               println(
                 s"Warning: dp at price $price exceeds 1000 entries: ${dp(price).length}"
               )
-              val randomChoice = Array.range(0, dp(price).length)
               for (i <- 0 until 1000) {
-                val randIdx =
-                  random.nextInt(randomChoice.length - i) + i
-                val temp = randomChoice(i)
-                randomChoice(i) = randomChoice(randIdx)
-                randomChoice(randIdx) = temp
+                val randIdx = random.nextInt(dp(price).length - i) + i
+                val temp = dp(price)(i)
+                dp(price)(i) = dp(price)(randIdx)
+                dp(price)(randIdx) = temp
               }
-              randomChoice.slice(0, 1000).map(idx => dp(price)(idx))
+              dp(price).slice(0, 1000)
             } else { dp(price) }
             next_dp(newPrice) = dp(newPrice) ++ existingMenus.map {
               existingMenu =>
@@ -162,7 +160,12 @@ class KondateSolver(menus: Array[Menu], config: KondateSolver.KondateConfig) {
       }
       dp = next_dp
     }
-    val result = dp.slice(config.price - config.priceRange, config.price + config.priceRange + 1).flatten
+    val result = dp
+      .slice(
+        config.price - config.priceRange,
+        config.price + config.priceRange + 1
+      )
+      .flatten
     if (config.requireMainDish) {
       result.filter(_.exists(_.price > 200)) // 小鉢以外のおかずを含むように
     } else {
@@ -186,7 +189,7 @@ class KondateSolver(menus: Array[Menu], config: KondateSolver.KondateConfig) {
             config.sortMetric match
               case KondateSolver.NutritionBalance =>
                 (menus, KondateSolver.nutritionScore(menus))
-              case KondateSolver.Enery => (menus, -menus.map(_.energy).sum)
+              case KondateSolver.Energy => (menus, -menus.map(_.energy).sum)
           }
           .sortBy(_._2)
         nutritionSorted(

@@ -188,7 +188,7 @@ def entry(): Unit = {
                 )
               case "energy" =>
                 kondateConfig.update(conf =>
-                  conf.copy(sortMetric = KondateSolver.Enery)
+                  conf.copy(sortMetric = KondateSolver.Energy)
                 )
             }
           },
@@ -203,7 +203,7 @@ def entry(): Unit = {
             "カロリーを重視した",
             value := "energy",
             selected <-- kondateConfig.signal.map(
-              _.sortMetric == KondateSolver.Enery
+              _.sortMetric == KondateSolver.Energy
             )
           )
         ),
@@ -295,7 +295,8 @@ def entry(): Unit = {
                   }
                 )
               ),
-              if (menus.nonEmpty) div(
+              if (menus.nonEmpty)
+                div(
                   idAttr := "kondate_list",
                   menus.map { menu =>
                     a(
@@ -312,7 +313,9 @@ def entry(): Unit = {
                       )
                     )
                   }
-                ) else div(
+                )
+              else
+                div(
                   p("(トレイに何も載せずにレジに向かってください)")
                 ),
               div(

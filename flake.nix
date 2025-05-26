@@ -10,7 +10,7 @@
     in {
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
-          scala sbt jdk nodejs
+          scala sbt nodejs
         ];
       };
       apps.${system}.generate-menu = {

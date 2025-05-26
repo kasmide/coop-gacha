@@ -14,10 +14,8 @@ build:
 generate-menu:
   stage: build
   image: nixpkgs/nix-flakes:latest
-  before_script:
-    - nix-shell -p curl libarchive --command "curl -L \"https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/jobs/artifacts/${CI_COMMIT_BRANCH}/download?job=generate-menu\" | bsdtar -x"
   script:
-    - nix flakes run .#generate-menu
+    - nix run .#ci-generate-menu
   artifacts:
     paths:
       - menu.json

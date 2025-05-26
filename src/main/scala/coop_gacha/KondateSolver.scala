@@ -1,28 +1,6 @@
 package coop_gacha
 import scala.math.pow
-import scalajs.js
-import scala.scalajs.js.annotation.JSName
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
-
-class Menu(
-    @JSName("名前") val name: String,
-    @JSName("食堂ID") val houseId: String,
-    @JSName("メニュー") val menuId: String,
-    @JSName("組価(税込)") val price: Int,
-    @JSName("エネルギー") val energy: Double,
-    @JSName("タンパク質") val protein: Double,
-    @JSName("脂質") val fat: Double,
-    @JSName("炭水化物") val carbohydrates: Double,
-    @JSName("食塩相当量") val saltEquivalent: Double,
-    @JSName("カルシウム") val calcium: Double,
-    @JSName("野菜量") val vegetableAmount: Double,
-    @JSName("鉄") val iron: Double,
-    @JSName("ビタミン A") val vitaminA: Double,
-    @JSName("ビタミン B1") val vitaminB1: Double,
-    @JSName("ビタミン B2") val vitaminB2: Double,
-    @JSName("ビタミン C") val vitaminC: Double
-) extends js.Object
+import coop_gacha.model.Menu
 
 object GoodNutrition {
   val energy = 883.0f
@@ -126,7 +104,7 @@ class KondateSolver(menus: Array[Menu], config: KondateSolver.KondateConfig) {
   println(
     s"kondateSolver initialised with ${menus.length} menus and target ${config.price}"
   )
-  lazy val decentResult: Array[Array[Menu]] = {
+  lazy val menuChoices: Array[Array[Menu]] = {
     var dp: Array[Array[Array[Menu]]] =
       Array.fill(config.price + config.priceRange + 1)(Array.empty[Array[Menu]])
     for (menu <- menus) {
@@ -174,16 +152,16 @@ class KondateSolver(menus: Array[Menu], config: KondateSolver.KondateConfig) {
   }
 
   def gacha(): Array[Menu] = {
-    decentResult.length match {
+    menuChoices.length match {
       case 0 =>
         Array.empty[Menu]
       case _ =>
         val randomArea =
-          random.nextInt(math.max(1, decentResult.length - 300))
-        val nutritionSorted = decentResult
+          random.nextInt(math.max(1, menuChoices.length - 300))
+        val nutritionSorted = menuChoices
           .slice(
             randomArea,
-            math.min(randomArea + 300, decentResult.length)
+            math.min(randomArea + 300, menuChoices.length)
           )
           .map { menus =>
             config.sortMetric match

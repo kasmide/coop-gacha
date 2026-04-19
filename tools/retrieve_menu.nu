@@ -2,7 +2,7 @@ let HOUSE_ID = 663151
 let menus_per_date = curl $"https://west2-univ.jp/sp/menu.php?t=($HOUSE_ID)"
   | lines
   | parse -r r#'id="(?P<bunrui>.+?)">(?P<date>\d+年\d+月\d+日)'#
-  | each {{date: ($in.date|into datetime --format "%Y年%m月%d日" -z JST | format date "%+"), bunrui: $in.bunrui}}
+  | each {{date: ($in.date|into datetime --format "%Y年%m月%d日" -o +9 | format date "%+"), bunrui: $in.bunrui}}
   | each {{date: $in.date, menus:
     (curl https://west2-univ.jp/sp/menu_load.php?t=($HOUSE_ID)&a=($in.bunrui)
     | parse -r r#'detail.php\?t=(?P<house>\d+)&c=(?P<menu>[0-9_]+)'#)
